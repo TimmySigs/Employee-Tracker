@@ -1,3 +1,4 @@
+-- Active: 1664493488256@@127.0.0.1@3306@books_db
 DROP DATABASE IF EXISTS employees_db;
 
 CREATE DATABASE employees_db;
@@ -14,7 +15,7 @@ CREATE TABLE employee (
 );
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ("John", "Lennon", 1, NULL), ("Paul", "McCartney", 2, 1), ("George", "Harrison", 3, NULL), ("Ringo", "Starr", 4, 3), ("Chuck", "Berry", 5), ("Elvis", "Presly", 6, 5);
+VALUES ("John", "Lennon", 1, NULL), ("Paul", "McCartney", 2, 1), ("George", "Harrison", 3, NULL), ("Ringo", "Starr", 4, 3), ("Chuck", "Berry", 5, 5), ("Elvis", "Presly", 6, 5);
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
 VALUES ("Bobby", "Jenks", 2, 1), ("Paul", "Konerko", 4, 3), ("Mark", "Burhrle", 6, 5);
