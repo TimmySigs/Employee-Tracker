@@ -1,9 +1,16 @@
 const cTable = require("console.table")
 const inquirer = require("inquirer")
 const { handlers } = require("./lib")
+const mysql = require("mysql2")
 
-const initializeApp = async () => {
-    const openingChoices = [
+
+const initializeApp = () => {
+    inquirer.promt = ([
+        {
+            type: "list",
+            name: "opening",
+            message: "What would you like to do?",
+            choices: [
         "Exit",
         "View all departments",
         "View all roles",
@@ -17,19 +24,14 @@ const initializeApp = async () => {
         "Delete a role",
         "Delete an employee",
     ]
-    const answers = await inquirer.prompt({
-        type: "list",
-        name: "opening",
-        message: "What would you like to do?",
-        choices: openingChoices,
-        pageSize: 5,
-    })
-    switch (answers.opening) {
-        case openingChoices[0]:
+}
+    ])
+    .then (answers.opening) 
+        const openingChoices[0]:
             console.log("Goodbye!")
             return handlers.end()
 
-        case openingChoices[1]:
+        if openingChoices[1]:
             await handlers.view.departments()
             break
 
@@ -75,6 +77,7 @@ const initializeApp = async () => {
     }
 
     return initializeApp()
-}
+
 
 initializeApp()
+
