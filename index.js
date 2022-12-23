@@ -8,7 +8,7 @@ const db = mysql.createConnection(
     {
         host: "localhost",
         user: "root",
-        password: "PokernMusic26!",
+        password: process.env.DB_PASSWORD,
         database: "employees_db",
     },
     console.log("connected to the employee database")
@@ -39,7 +39,6 @@ const init = () => {
                 ]
             }
         ]).then(ans => {
-            // console.log(ans.initialize);
             switch (ans.initialize) {
                 case "View all departments": viewDept();
                     break;
@@ -150,11 +149,6 @@ const addRole = () => {
 };
 
 const addEmployee = () => {
-    // const rollChoices = () => db.promise().query(`SELECT * FROM roles`)
-    // .then((rows) => {
-    //     let arrNames = rows[0].map(obj => obj.name);
-    //     return arrNames
-    // })
     inquirer
         .prompt([
             {
@@ -167,12 +161,6 @@ const addEmployee = () => {
                 message: "What is the employee's last name?",
                 name: "lastName"
             },
-            // {
-            //     type: "list",
-            //     message: "What is the employee's role?",
-            //     name: "employeeRole",
-            //     choices: rollChoices
-            // }
         ]).then(ans => {
             db.query(`INSERT INTO employees(first_name, last_name)
                     VALUES(?, ?)`, [ans.firstName, ans.lastName], (err, results) => {
