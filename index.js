@@ -1,7 +1,6 @@
-const cTable = require("console.table")
-const inquirer = require("inquirer")
-const { handlers } = require("./lib")
-const mysql = require("mysql2")
+const cTable = require('console.table');
+const mysql = require('mysql2');
+const inquirer = require('inquirer');
 
 require("dotenv").config()
 
@@ -9,32 +8,25 @@ const db = mysql.createConnection(
     {
         host: "localhost",
         user: "root",
-        password: "DB_PASSWORD",
+        password: "PokernMusic26!",
         database: "employees_db",
     },
     console.log("connected to the employee database")
 )
 
-
 db.connect(err => {
-    if (err) throw (err);
-    console.log("Connected to " + process.env.DB_NAME);
-    nowConnected();
-});
+    if (err) {
+        throw err;
+    }
+})
 
-nowConnected = () => {
-    console.log("EMPLOYEE MANAGER");
-    initializeApp();
-}
-
-
-const initializeApp = () => {
+const init = () => {
     inquirer
         .prompt([
             {
                 type: "list",
-                name: "opening",
-                message: "What would you like to do?",
+                message: "Please select from the following options:",
+                name: "initialize",
                 choices: [
                     "View all departments",
                     "View all roles",
@@ -42,68 +34,157 @@ const initializeApp = () => {
                     "Add a department",
                     "Add a role",
                     "Add an employee",
-                    "Update a role's salary",
-                    "Update an employee's information",
-                    "Delete a department",
-                    "Delete a role",
-                    "Delete an employee",
-                    "Exit"
+                    "Update an employee role",
+                    "I'm finished"
                 ]
             }
-        ])
-        .then(answers => {
-            switch (answers.opening) {
-                case "Exit":
-                    console.log("Goodbye!")
-                    return handlers.end()
-
-                case "View all departments":
-                    handlers.view.departments()
-                    break
-
-                case "View all roles":
-                    handlers.view.roles()
-                    break
-
-                case "View all employees":
-                    handlers.view.employees()
-                    break
-
-                case "Add a department":
-                    handlers.add.department()
-                    break
-
-                case "Add a role":
-                    handlers.add.role()
-                    break
-
-                case "Add an employee":
-                    handlers.add.employee()
-                    break
-
-                case "Update a role's salary":
-                    handlers.update.role()
-                    break
-
-                case "Update an employee's information":
-                    handlers.update.employee()
-                    break
-
-                case "Delete a department":
-                    handlers.delete.department()
-                    break
-
-                case "Delete a role":
-                    handlers.delete.role()
-                    break
-
-                case "Delete an employee":
-                    handlers.delete.employee()
-                    break
+        ]).then(ans => {
+            // console.log(ans.initialize);
+            switch (ans.initialize) {
+                case "View all departments": viewDept();
+                    break;
+                case "View all roles": viewRoles();
+                    break;
+                case "View all employees": viewEmployees();
+                    break;
+                case "Add a department": addDept();
+                    break;
+                case "Add a role": addRole();
+                    break;
+                case "Add an employee": addEmployee();
+                    break;
+                case "Update an employee role": updateEmployee();
+                    break;
+                case "I'm finished":
+                    console.log("Thank you very much!");
+                    process.exit();
             }
-
-            initializeApp()
-        })
+        }).catch(err => console.error(err));
 }
 
-initializeApp()
+init();
+
+const viewDept = () => {
+    // console.log("Working")
+    db.query(`SELECT * FROM department`, (err, results) => {
+        err ? console.error(err) : console.table(results);
+        init();
+    })
+};
+
+const viewRoles = () => {
+    db.query(`SELECT * FROM roles`, (err, results) => {
+        err ? console.error(err) : console.table(results);
+        init();
+    })
+};
+
+const viewEmployees = () => {
+    db.query(`SELECT * FROM employees`, (err, results) => {
+        err ? console.error(err) : console.table(results);
+        init();
+    })
+}
+
+const addDept = () => {
+    inquirer
+        .prompt([
+            {
+                type: "input",
+                message: "What is the name of the department you'd like to add?",
+                name: "addDept"
+            }
+        ]).then(ans => {
+            db.query(`INSERT INTO department(name)
+                    VALUES(?)`, ans.addDept, (err, results) => {
+                if (err) {
+                    console.log(err)
+                } else {
+                    db.query(`SELECT * FROM department`, (err, results) => {
+                        err ? console.error(err) : console.table(results);
+                        init();
+                    })
+                }
+            }
+            )
+        })
+};
+
+const addRole = () => {
+    const deptChoices = () => db.promise().query(`SELECT * FROM department`)
+        .then((rows) => {
+            let arrNames = rows[0].map(obj => obj.name);
+            return arrNames
+        })
+    inquirer
+        .prompt([
+            {
+                type: "input",
+                message: "What is the title of the role you'd like to add?",
+                name: "roleTitle"
+            },
+            {
+                type: "input",
+                message: "What is the salary for this role?",
+                name: "roleSalary"
+            },
+            {
+                type: "list",
+                message: "Which department is this role in?",
+                name: "addDept",
+                choices: deptChoices
+            }
+        ]).then(ans => {
+            db.promise().query(`SELECT id FROM department WHERE name = ?`, ans.addDept)
+                .then(answer => {
+                    let mappedId = answer[0].map(obj => obj.id);
+                    // console.log(mappedId[0])
+                    return mappedId[0]
+                })
+                .then((mappedId) => {
+                    db.promise().query(`INSERT INTO roles(title, salary, department_id)
+                VALUES(?, ?, ?)`, [ans.roleTitle, ans.roleSalary, mappedId]);
+                    init()
+                })
+        })
+};
+
+const addEmployee = () => {
+    // const rollChoices = () => db.promise().query(`SELECT * FROM roles`)
+    // .then((rows) => {
+    //     let arrNames = rows[0].map(obj => obj.name);
+    //     return arrNames
+    // })
+    inquirer
+        .prompt([
+            {
+                type: "input",
+                message: "What is the employee's first name?",
+                name: "firstName"
+            },
+            {
+                type: "input",
+                message: "What is the employee's last name?",
+                name: "lastName"
+            },
+            // {
+            //     type: "list",
+            //     message: "What is the employee's role?",
+            //     name: "employeeRole",
+            //     choices: rollChoices
+            // }
+        ]).then(ans => {
+            db.query(`INSERT INTO employees(first_name, last_name)
+                    VALUES(?, ?)`, [ans.firstName, ans.lastName], (err, results) => {
+                if (err) {
+                    console.log(err)
+                } else {
+                    db.query(`SELECT * FROM employees`, (err, results) => {
+                        err ? console.error(err) : console.table(results);
+                        init();
+                    })
+                }
+            }
+            )
+        })
+}
