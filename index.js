@@ -176,3 +176,33 @@ const addEmployee = () => {
             )
         })
 }
+
+const updateEmployee = () => {
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          message: "Enter the ID of the employee whose role you'd like to update:",
+          name: "employeeId"
+        },
+        {
+          type: "input",
+          message: "Enter the new role ID for this employee:",
+          name: "newRoleId"
+        }
+      ])
+      .then((ans) => {
+        db.query(
+          `UPDATE employees SET role_id = ? WHERE id = ?`,
+          [ans.newRoleId, ans.employeeId],
+          (err, results) => {
+            if (err) {
+              console.error(err);
+            } else {
+              console.log("Successfully updated employee role.");
+              init();
+            }
+          }
+        );
+      });
+  };
